@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ignition Co-Lab — Team Launch Activity</title>
+<style>
+  :root {
+    --navy: #0D1F3C;
+    --blue: #2E5594;
+    --gold: #C9A84C;
+    --light-gold: #FDF3DC;
+    --light-blue: #D6E4F0;
+    --white: #FFFFFF;
+    --text: #2D2D2D;
+    --gray: #F5F5F5;
+    --mid-gray: #BFBFBF;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f4f8;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: var(--navy);
+    padding: 32px 24px 24px;
+    text-align: center;
+    border-bottom: 4px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation: shimmer 2.5s ease-in-out infinite;
+  }
+  @keyframes shimmer { 0% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
+
+  .header .brand { color: var(--gold); font-size: 11px; font-weight: bold; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 10px; }
+  .header h1 { color: var(--white); font-size: 26px; font-weight: bold; margin-bottom: 6px; }
+  .header p { color: rgba(255,255,255,0.6); font-size: 14px; }
+
+  /* Progress */
+  .progress-wrap { background: var(--navy); padding: 0 24px 20px; }
+  .progress-track { background: rgba(255,255,255,0.12); border-radius: 50px; height: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 50px; transition: width 0.5s ease; width: 0%; }
+  .progress-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .progress-label { color: rgba(255,255,255,0.45); font-size: 12px; }
+  .progress-steps { display: flex; gap: 6px; }
+  .progress-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.3s;
+  }
+  .progress-dot.done { background: var(--gold); }
+  .progress-dot.active { background: var(--white); }
+
+  /* Main */
+  .main { max-width: 640px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* Part card */
+  .part { display: none; animation: slideIn 0.4s ease both; }
+  .part.active { display: block; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .part-header {
+    border-radius: 14px 14px 0 0;
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .part-header.gold { background: var(--gold); }
+  .part-header.navy { background: var(--navy); }
+  .part-header.blue { background: var(--blue); }
+  .part-header.dark { background: #1a2f50; }
+
+  .part-emoji { font-size: 32px; flex-shrink: 0; }
+  .part-title-wrap {}
+  .part-num { font-size: 11px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; opacity: 0.7; margin-bottom: 3px; }
+  .part-title { font-size: 20px; font-weight: bold; }
+  .part-time { font-size: 12px; opacity: 0.65; margin-top: 3px; }
+
+  .gold .part-num, .gold .part-title, .gold .part-time { color: var(--navy); }
+  .navy .part-num, .navy .part-title, .navy .part-time,
+  .blue .part-num, .blue .part-title, .blue .part-time,
+  .dark .part-num, .dark .part-title, .dark .part-time { color: var(--white); }
+
+  .part-body {
+    background: var(--white);
+    border-radius: 0 0 14px 14px;
+    padding: 24px;
+    border: 1px solid #dde4ef;
+    border-top: none;
+    margin-bottom: 20px;
+  }
+
+  .intro-note {
+    background: var(--light-blue);
+    border-left: 4px solid var(--blue);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--navy);
+    margin-bottom: 24px;
+  }
+
+  /* Questions */
+  .question { margin-bottom: 28px; }
+  .question:last-child { margin-bottom: 0; }
+
+  .q-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .q-num {
+    min-width: 28px; height: 28px;
+    background: var(--navy);
+    color: var(--gold);
+    font-size: 13px; font-weight: bold;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .q-text { font-size: 15px; font-weight: bold; color: var(--navy); padding-top: 4px; line-height: 1.4; }
+  .q-hint { font-size: 12px; color: #777; font-style: italic; margin-bottom: 10px; margin-left: 38px; }
+
+  .answer-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .answer-pair { grid-template-columns: 1fr; } }
+
+  .answer-box {
+    background: var(--gray);
+    border: 1.5px solid #d8e0ec;
+    border-radius: 8px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .answer-box-label {
+    background: var(--navy);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    text-transform: uppercase;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    border: 1.5px solid #d8e0ec;
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: var(--gray);
+    resize: vertical;
+    transition: border-color 0.2s, background 0.2s;
+    min-height: 72px;
+  }
+  textarea.short { min-height: 48px; }
+  textarea:focus, input:focus { outline: none; border-color: var(--blue); background: var(--white); }
+  .answer-box textarea {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    min-height: 72px;
+    padding: 10px 12px;
+  }
+  .answer-box textarea:focus { background: rgba(255,255,255,0.6); }
+
+  /* Grid table */
+  .strength-grid { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; margin-top: 8px; }
+  .strength-grid th {
+    background: var(--navy);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 10px 12px;
+    text-align: left;
+    letter-spacing: 0.5px;
+  }
+  .strength-grid td {
+    padding: 0;
+    border-bottom: 1px solid #e8edf5;
+    vertical-align: top;
+  }
+  .strength-grid tr:last-child td { border-bottom: none; }
+  .strength-grid tr:nth-child(even) td { background: #f8fafc; }
+  .skill-label {
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--navy);
+    min-width: 160px;
+    border-right: 1px solid #e8edf5;
+    background: var(--gray);
+  }
+  .skill-input { padding: 6px 8px; }
+  .skill-input input {
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    min-height: auto;
+    padding: 6px 8px;
+    font-size: 13px;
+    width: 100%;
+  }
+  .skill-input input:focus { background: rgba(46,85,148,0.06); }
+
+  /* Team identity fields */
+  .identity-field { margin-bottom: 16px; }
+  .identity-field:last-child { margin-bottom: 0; }
+  .identity-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--navy);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .identity-emoji { font-size: 16px; }
+
+  /* Team profile card */
+  .profile-card {
+    background: linear-gradient(135deg, #f8f9ff, var(--gray));
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 8px;
+  }
+  .profile-title {
+    color: var(--navy);
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 12px;
+  }
+  .profile-section { margin-bottom: 20px; }
+  .profile-section-title {
+    background: var(--blue);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .profile-field { margin-bottom: 12px; }
+  .profile-field label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .profile-field input { min-height: auto; padding: 10px 12px; font-size: 14px; }
+
+  /* Submit */
+  .submit-wrap {
+    background: var(--navy);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .submit-text { color: var(--white); font-size: 14px; line-height: 1.5; }
+  .submit-text strong { color: var(--gold); display: block; margin-bottom: 2px; }
+
+  /* Nav */
+  .nav-wrap {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(13,31,60,0.97);
+    backdrop-filter: blur(10px);
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-top: 2px solid rgba(201,168,76,0.3);
+    z-index: 100;
+  }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    font-family: Arial, sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-back { background: rgba(255,255,255,0.1); color: var(--white); }
+  .btn-back:hover { background: rgba(255,255,255,0.2); }
+  .btn-next { background: var(--gold); color: var(--navy); }
+  .btn-next:hover { background: #e0be6a; transform: scale(1.03); }
+  .btn-submit { background: var(--blue); color: var(--white); }
+  .btn-submit:hover { background: #3a6bc4; transform: scale(1.03); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+  .nav-center { color: rgba(255,255,255,0.5); font-size: 13px; }
+
+  /* Success */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 60px 24px;
+    max-width: 500px;
+    margin: 0 auto;
+    animation: slideIn 0.5s ease both;
+  }
+  .success.show { display: block; }
+  .success-icon { font-size: 80px; margin-bottom: 20px; }
+  .success h2 { color: var(--navy); font-size: 28px; font-weight: bold; margin-bottom: 12px; }
+  .success p { color: #555; font-size: 15px; line-height: 1.7; margin-bottom: 24px; }
+  .success-box {
+    background: var(--light-gold);
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-size: 14px;
+    color: var(--navy);
+    line-height: 1.7;
+    text-align: left;
+  }
+  .success-box strong { color: var(--navy); font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">Ignition Co-Lab</div>
+  <h1>🤝 Team Launch Activity</h1>
+  <p>Who's On Your Team?  •  60–90 min in person</p>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-row">
+    <div class="progress-label" id="progressLabel">Part A of 4</div>
+    <div class="progress-steps">
+      <div class="progress-dot active" id="dot0"></div>
+      <div class="progress-dot" id="dot1"></div>
+      <div class="progress-dot" id="dot2"></div>
+      <div class="progress-dot" id="dot3"></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PART A: Fast Five -->
+  <div class="part active" data-part="0">
+    <div class="part-header gold">
+      <div class="part-emoji">⚡</div>
+      <div class="part-title-wrap">
+        <div class="part-num">Part A</div>
+        <div class="part-title">The Fast Five</div>
+        <div class="part-time">⏱ 15 minutes</div>
+      </div>
+    </div>
+    <div class="part-body">
+      <div class="intro-note">Take turns answering these out loud — both of you answer each question. No overthinking, first answer wins. Record both your answers below.</div>
+
+      <div class="question">
+        <div class="q-row"><div class="q-num">1</div><div class="q-text">One word that describes your work style.</div></div>
+        <div class="answer-pair">
+          <div class="answer-box"><div class="answer-box-label">Your Answer</div><textarea class="short" id="a1a" placeholder="One word..."></textarea></div>
+          <div class="answer-box"><div class="answer-box-label">Partner's Answer</div><textarea class="short" id="a1b" placeholder="One word..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="question">
+        <div class="q-row"><div class="q-num">2</div><div class="q-text">The last thing you made or created that you were proud of — anything counts.</div></div>
+        <div class="answer-pair">
+          <div class="answer-box"><div class="answer-box-label">Your Answer</div><textarea id="a2a" placeholder="Could be anything..."></textarea></div>
+          <div class="answer-box"><div class="answer-box-label">Partner's Answer</div><textarea id="a2b" placeholder="Could be anything..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="question">
+        <div class="q-row"><div class="q-num">3</div><div class="q-text">Your dream brand to work on — real or fictional, athlete or not.</div></div>
+        <div class="answer-pair">
+          <div class="answer-box"><div class="answer-box-label">Your Answer</div><textarea class="short" id="a3a" placeholder="Any brand..."></textarea></div>
+          <div class="answer-box"><div class="answer-box-label">Partner's Answer</div><textarea class="short" id="a3b" placeholder="Any brand..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="question">
+        <div class="q-row"><div class="q-num">4</div><div class="q-text">The thing you're genuinely the best at on this team.</div></div>
+        <div class="answer-pair">
+          <div class="answer-box"><div class="answer-box-label">Your Answer</div><textarea class="short" id="a4a" placeholder="Be honest..."></textarea></div>
+          <div class="answer-box"><div class="answer-box-label">Partner's Answer</div><textarea class="short" id="a4b" placeholder="Be honest..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="question">
+        <div class="q-row"><div class="q-num">5</div><div class="q-text">The thing you're most excited to learn from this experience.</div></div>
+        <div class="answer-pair">
+          <div class="answer-box"><div class="answer-box-label">Your Answer</div><textarea class="short" id="a5a" placeholder="What you want to learn..."></textarea></div>
+          <div class="answer-box"><div class="answer-box-label">Partner's Answer</div><textarea class="short" id="a5b" placeholder="What they want to learn..."></textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PART B: Strengths Mapping -->
+  <div class="part" data-part="1">
+    <div class="part-header navy">
+      <div class="part-emoji">💪</div>
+      <div class="part-title-wrap">
+        <div class="part-num">Part B</div>
+        <div class="part-title">Strengths Mapping</div>
+        <div class="part-time">⏱ 20 minutes</div>
+      </div>
+    </div>
+    <div class="part-body">
+      <div class="intro-note">Fill this in together — be honest, this is just for you two. After filling it in, talk through: where do you overlap? Where are the gaps? Those gaps are your growth opportunities.</div>
+      <table class="strength-grid">
+        <thead>
+          <tr>
+            <th style="width:40%">Skill Area</th>
+            <th style="width:30%">Who's Stronger?</th>
+            <th style="width:30%">Who Wants to Learn?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="skill-label">Visual Design & Creative</td>
+            <td class="skill-input"><input type="text" id="s1a" placeholder="Name..."></td>
+            <td class="skill-input"><input type="text" id="s1b" placeholder="Name..."></td>
+          </tr>
+          <tr>
+            <td class="skill-label">Social Media & Content</td>
+            <td class="skill-input"><input type="text" id="s2a" placeholder="Name..."></td>
+            <td class="skill-input"><input type="text" id="s2b" placeholder="Name..."></td>
+          </tr>
+          <tr>
+            <td class="skill-label">Marketing Strategy</td>
+            <td class="skill-input"><input type="text" id="s3a" placeholder="Name..."></td>
+            <td class="skill-input"><input type="text" id="s3b" placeholder="Name..."></td>
+          </tr>
+          <tr>
+            <td class="skill-label">Writing & Copywriting</td>
+            <td class="skill-input"><input type="text" id="s4a" placeholder="Name..."></td>
+            <td class="skill-input"><input type="text" id="s4b" placeholder="Name..."></td>
+          </tr>
+          <tr>
+            <td class="skill-label">Finance & Budgeting</td>
+            <td class="skill-input"><input type="text" id="s5a" placeholder="Name..."></td>
+            <td class="skill-input"><input type="text" id="s5b" placeholder="Name..."></td>
+          </tr>
+          <tr>
+            <td class="skill-label">Operations & Organization</td>
+            <td class="skill-input"><input type="text" id="s6a" placeholder="Name..."></td>
+            <td class="skill-input"><input type="text" id="s6b" placeholder="Name..."></td>
+          </tr>
+          <tr>
+            <td class="skill-label">Sales & Customer Engagement</td>
+            <td class="skill-input"><input type="text" id="s7a" placeholder="Name..."></td>
+            <td class="skill-input"><input type="text" id="s7b" placeholder="Name..."></td>
+          </tr>
+          <tr>
+            <td class="skill-label">Research & Analytics</td>
+            <td class="skill-input"><input type="text" id="s8a" placeholder="Name..."></td>
+            <td class="skill-input"><input type="text" id="s8b" placeholder="Name..."></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PART C: Team Identity -->
+  <div class="part" data-part="2">
+    <div class="part-header blue">
+      <div class="part-emoji">🎯</div>
+      <div class="part-title-wrap">
+        <div class="part-num">Part C</div>
+        <div class="part-title">Your Team Identity</div>
+        <div class="part-time">⏱ 20 minutes</div>
+      </div>
+    </div>
+    <div class="part-body">
+      <div class="intro-note">Answer these together — one answer per question. These become your team's operating agreement for the year.</div>
+
+      <div class="identity-field">
+        <div class="identity-label"><span class="identity-emoji">🏷️</span> Team name (something fun, just for internal use)</div>
+        <input type="text" id="t1" placeholder="Your team name...">
+      </div>
+      <div class="identity-field">
+        <div class="identity-label"><span class="identity-emoji">💥</span> Your team's single biggest strength going in</div>
+        <input type="text" id="t2" placeholder="What makes you great together...">
+      </div>
+      <div class="identity-field">
+        <div class="identity-label"><span class="identity-emoji">🔥</span> The one thing you're both most excited to build</div>
+        <input type="text" id="t3" placeholder="What you can't wait to create...">
+      </div>
+      <div class="identity-field">
+        <div class="identity-label"><span class="identity-emoji">⭐</span> One word you want your athlete's brand to be known for</div>
+        <input type="text" id="t4" placeholder="One word only — you'll refine this later...">
+      </div>
+      <div class="identity-field">
+        <div class="identity-label"><span class="identity-emoji">💬</span> How you'll communicate day-to-day</div>
+        <input type="text" id="t5" placeholder="Text, group chat, email — decide now...">
+      </div>
+      <div class="identity-field">
+        <div class="identity-label"><span class="identity-emoji">📅</span> Your recurring weekly meeting day & time</div>
+        <input type="text" id="t6" placeholder="e.g. Tuesdays at 4pm...">
+      </div>
+    </div>
+  </div>
+
+  <!-- PART D: Team Profile -->
+  <div class="part" data-part="3">
+    <div class="part-header dark">
+      <div class="part-emoji">📋</div>
+      <div class="part-title-wrap">
+        <div class="part-num">Part D</div>
+        <div class="part-title">Your Team Profile</div>
+        <div class="part-time">Submit by Friday, October 3rd</div>
+      </div>
+    </div>
+    <div class="part-body">
+      <div class="intro-note">This is how we introduce your team to your athlete. Fill it in and hit submit — responses go directly to Myra at ISM.</div>
+
+      <div class="profile-card">
+        <div class="profile-title">⚡ Ignition Co-Lab — Team Profile</div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">Team Info</div>
+          <div class="profile-field">
+            <label>Team Name</label>
+            <input type="text" id="p_teamname" placeholder="Your team name...">
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">Team Member 1</div>
+          <div class="profile-field"><label>Full Name</label><input type="text" id="p_n1" placeholder="Name..."></div>
+          <div class="profile-field"><label>Email</label><input type="text" id="p_e1" placeholder="Email..."></div>
+          <div class="profile-field"><label>Top Strengths</label><input type="text" id="p_s1" placeholder="e.g. design, social media, marketing..."></div>
+          <div class="profile-field"><label>Role Focus</label><input type="text" id="p_r1" placeholder="Primary role on this team..."></div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">Team Member 2</div>
+          <div class="profile-field"><label>Full Name</label><input type="text" id="p_n2" placeholder="Name..."></div>
+          <div class="profile-field"><label>Email</label><input type="text" id="p_e2" placeholder="Email..."></div>
+          <div class="profile-field"><label>Top Strengths</label><input type="text" id="p_s2" placeholder="e.g. copywriting, finance, operations..."></div>
+          <div class="profile-field"><label>Role Focus</label><input type="text" id="p_r2" placeholder="Primary role on this team..."></div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">About Your Team</div>
+          <div class="profile-field"><label>Combined Superpower</label><input type="text" id="p_super" placeholder="What makes you great together — one sentence..."></div>
+          <div class="profile-field"><label>What You're Most Excited to Build</label><input type="text" id="p_excited" placeholder="One thing..."></div>
+          <div class="profile-field"><label>Weekly Meeting Day & Time</label><input type="text" id="p_meet" placeholder="e.g. Tuesdays at 4pm..."></div>
+        </div>
+      </div>
+
+      <div class="submit-wrap">
+        <div class="submit-text">
+          <strong>Ready to submit? 🚀</strong>
+          This sends your Team Profile directly to myra@ignitionsportsmktg.com
+        </div>
+        <button class="btn btn-submit" onclick="submitProfile()">Submit Team Profile →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="success" id="successScreen">
+    <div class="success-icon">🎉</div>
+    <h2>Team Profile Submitted!</h2>
+    <p>Your Team Profile is on its way to the Ignition Co-Lab team. Nice work — you're one step closer to meeting your athlete.</p>
+    <div class="success-box">
+      <strong>What happens next:</strong><br><br>
+      Once Myra confirms your submission, watch your inbox for your <strong>Athlete Reveal</strong> — the moment you've been waiting for. 🏆<br><br>
+      In the meantime, keep building your team chemistry and start thinking about what you want to build together this year.
+    </div>
+  </div>
+
+</div>
+
+<!-- Fixed Nav -->
+<div class="nav-wrap" id="navWrap">
+  <button class="btn btn-back" id="btnBack" onclick="navigate(-1)" style="visibility:hidden;">← Back</button>
+  <div class="nav-center" id="navCenter">Part A of 4</div>
+  <button class="btn btn-next" id="btnNext" onclick="navigate(1)">Next →</button>
+</div>
+
+<script>
+  let current = 0;
+  const total = 4;
+
+  function updateUI() {
+    document.querySelectorAll('.part').forEach((p,i) => {
+      p.classList.toggle('active', i === current);
+    });
+    const pct = (current / (total - 1)) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    const labels = ['Part A of 4','Part B of 4','Part C of 4','Part D of 4'];
+    document.getElementById('progressLabel').textContent = labels[current];
+    document.getElementById('navCenter').textContent = labels[current];
+
+    for (let i = 0; i < total; i++) {
+      const dot = document.getElementById('dot' + i);
+      dot.classList.remove('done','active');
+      if (i < current) dot.classList.add('done');
+      else if (i === current) dot.classList.add('active');
+    }
+
+    const back = document.getElementById('btnBack');
+    const next = document.getElementById('btnNext');
+    back.style.visibility = current > 0 ? 'visible' : 'hidden';
+    next.style.display = current < total - 1 ? 'inline-block' : 'none';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function navigate(dir) {
+    current = Math.max(0, Math.min(total - 1, current + dir));
+    updateUI();
+  }
+
+  function collectData() {
+    const get = id => (document.getElementById(id)?.value?.trim() || '—');
+    return `IGNITION CO-LAB — TEAM LAUNCH ACTIVITY & TEAM PROFILE
+${'='.repeat(55)}
+
+TEAM: ${get('p_teamname')}
+SUBMITTED BY: ${get('p_n1')} & ${get('p_n2')}
+
+${'='.repeat(55)}
+PART A — THE FAST FIVE
+${'='.repeat(55)}
+
+Q1. One word for your work style:
+  ${get('p_n1')}: ${get('a1a')}
+  ${get('p_n2')}: ${get('a1b')}
+
+Q2. Last thing you created and were proud of:
+  ${get('p_n1')}: ${get('a2a')}
+  ${get('p_n2')}: ${get('a2b')}
+
+Q3. Dream brand to work on:
+  ${get('p_n1')}: ${get('a3a')}
+  ${get('p_n2')}: ${get('a3b')}
+
+Q4. The thing you're best at on this team:
+  ${get('p_n1')}: ${get('a4a')}
+  ${get('p_n2')}: ${get('a4b')}
+
+Q5. Most excited to learn:
+  ${get('p_n1')}: ${get('a5a')}
+  ${get('p_n2')}: ${get('a5b')}
+
+${'='.repeat(55)}
+PART B — STRENGTHS MAPPING
+${'='.repeat(55)}
+
+Skill Area              | Stronger         | Wants to Learn
+Visual Design           | ${get('s1a')} | ${get('s1b')}
+Social Media & Content  | ${get('s2a')} | ${get('s2b')}
+Marketing Strategy      | ${get('s3a')} | ${get('s3b')}
+Writing & Copywriting   | ${get('s4a')} | ${get('s4b')}
+Finance & Budgeting     | ${get('s5a')} | ${get('s5b')}
+Operations              | ${get('s6a')} | ${get('s6b')}
+Sales & Engagement      | ${get('s7a')} | ${get('s7b')}
+Research & Analytics    | ${get('s8a')} | ${get('s8b')}
+
+${'='.repeat(55)}
+PART C — TEAM IDENTITY
+${'='.repeat(55)}
+
+Team Name: ${get('t1')}
+Biggest Strength: ${get('t2')}
+Most Excited to Build: ${get('t3')}
+One Word for Athlete Brand: ${get('t4')}
+Communication Style: ${get('t5')}
+Weekly Meeting: ${get('t6')}
+
+${'='.repeat(55)}
+PART D — TEAM PROFILE
+${'='.repeat(55)}
+
+TEAM MEMBER 1
+Name: ${get('p_n1')}
+Email: ${get('p_e1')}
+Strengths: ${get('p_s1')}
+Role: ${get('p_r1')}
+
+TEAM MEMBER 2
+Name: ${get('p_n2')}
+Email: ${get('p_e2')}
+Strengths: ${get('p_s2')}
+Role: ${get('p_r2')}
+
+Combined Superpower: ${get('p_super')}
+Most Excited to Build: ${get('p_excited')}
+Weekly Meeting: ${get('p_meet')}`;
+  }
+
+  function submitProfile() {
+    const data = collectData();
+    const team = document.getElementById('p_teamname')?.value?.trim() || 'Team';
+    const subject = `Co-Lab Team Profile — ${team}`;
+    window.location.href = `mailto:myra@ignitionsportsmktg.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(data)}`;
+
+    setTimeout(() => {
+      document.getElementById('navWrap').style.display = 'none';
+      document.querySelectorAll('.part').forEach(p => p.classList.remove('active'));
+      document.getElementById('progressFill').style.width = '100%';
+      document.getElementById('progressLabel').textContent = 'Complete! 🎉';
+      document.getElementById('successScreen').classList.add('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 500);
+  }
+
+  updateUI();
+</script>
+</body>
+</html>
